@@ -46,6 +46,6 @@ Logo abaixo para a vizualização em html
 <hr>
 <?= $sc->stream_url ?>
 ```
-
 ## Colaboradores
-![https://github.com/dayssonrodrigues](https://avatars.githubusercontent.com/u/39655124?s=40&v=4)
+![https://avatars.githubusercontent.com/u/39655124?s=40&v=4](https://avatars.githubusercontent.com/u/39655124?s=40&v=4)
+![https://avatars.githubusercontent.com/u/36286266?s=40&v=4](https://avatars.githubusercontent.com/u/36286266?s=40&v=4)
