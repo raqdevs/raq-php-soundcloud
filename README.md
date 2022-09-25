@@ -1,4 +1,4 @@
-# raq php soundcloud
+# raq-php-soundcloud
 
 Biblioteca para extração de dados e stream de audio do [soundcloud.com](https://soundcloud.com/), extrai todas as informações disponiveis de uma faixa e gera uma url para a reprodução do audio
 
