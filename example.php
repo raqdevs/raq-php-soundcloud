@@ -6,12 +6,12 @@ $url = "https://soundcloud.com/chillplanetmusic/invisible-annick-bestia-stay-wit
 
 $sc = new RaqSoundcloud;
 $sc->request($url);
-$sc->trackId();
-$sc->clientId();
-$sc->trackInformation();
+$sc->getTrackId();
+$sc->getClientId();
+$sc->getTrackInformation();
 $sc->getStream();
 
-// var_dump($sc->track);
+var_dump($sc);
 
 ?>
 
@@ -20,3 +20,5 @@ $sc->getStream();
 <audio controls src="<?= $sc->stream_url ?>"></audio>
 <hr>
 <?= $sc->stream_url ?>
+
+
