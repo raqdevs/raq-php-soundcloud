@@ -71,8 +71,6 @@ echo $sc->stream;
 ```
 O resultado é algo semelhante a isso: `https://cf-media.sndcdn.com/Qz1NlEcNOJlf.128.mp3?Policy=eyJTdGF0ZW1lbnQiOlt7IlJlc291cmNlIjoiKjovL2NmL....`
 
-<br/>
-
 ### Buscando através de url da faixa
 example.php
 ```php
