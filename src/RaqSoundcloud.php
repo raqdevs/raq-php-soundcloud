@@ -9,10 +9,16 @@ class RaqSoundcloud {
 	public $html;
 	public $dom;
 	public $stream;
+	public $search_results;
 
 	public $track_api_endpoint = "https://api-v2.soundcloud.com/tracks?ids=";
-	// public $app_version = "&app_version=1663668775&app_locale=pt_BR";
 	public $app_version = "&app_version=1663668775&app_locale=en_US";
+
+	// search
+	public $endpoint_search = "https://api-v2.soundcloud.com/search/tracks";
+	public $limit_offset = "&limit=20&offset=0";
+	// public $app_version = "&app_version=1663668775&app_locale=en";
+
 
 
 	public function request($url)
@@ -30,8 +36,13 @@ class RaqSoundcloud {
 		return $this;
 	}
 
-	public function clientId()
+	public function getClientId()
 	{
+		
+		if(!$this->dom){
+			$this->request("https://soundcloud.com/");
+		}
+
 		$scripts = $this->dom->getElementsByTagName('script');
 		$script = $scripts->item(13)->getAttribute('src');
 
@@ -39,10 +50,10 @@ class RaqSoundcloud {
 		$script = explode('"client_id=', $script)[1];
 		$script = explode('")', $script)[0];
 
-		$this->client_id = "client_id=".$script;
+		$this->client_id = $script;
 	}
 
-	public function trackId()
+	public function getTrackId()
 	{
 		$metas = $this->dom->getElementsByTagName('meta');
 
@@ -59,10 +70,10 @@ class RaqSoundcloud {
 		return $this;
 	}
 
-	public function trackInformation()
+	public function getTrackInformation()
 	{
 
-		$file = $this->track_api_endpoint.$this->track_id."&".$this->client_id.$this->app_version;
+		$file = $this->track_api_endpoint.$this->track_id."&client_id=".$this->client_id.$this->app_version;
 		$file = file_get_contents($file);
 		$track_information = json_decode($file);
 
@@ -92,18 +103,66 @@ class RaqSoundcloud {
 		return $this;
 	}
 
-
-
 	public function getStream()
 	{
 
 		$stream_url = $this->track_information[0]->media->transcodings[1]->url;
-		$stream_url = $stream_url."?".$this->client_id;
+		$stream_url = $stream_url."?client_id=".$this->client_id;
 
 		$stream_url = file_get_contents($stream_url);
 		$stream_url = json_decode($stream_url)->url;
 
 		$this->stream_url = $stream_url;
+
+		return $this;
+	}
+
+	public function search($q)
+	{
+		$q = urlencode($q);
+		$endpoint_search = $this->endpoint_search."?q=".$q."&client_id=".$this->client_id.$this->limit_offset.$this->app_version;
+		
+		$file = file_get_contents($endpoint_search);
+		$file = json_decode($file);
+
+		$collections = $file->collection;;
+		$result = [];
+
+		foreach ($collections as $collection) {
+			$progressive = array_filter($collection->media->transcodings,  function ($item){
+				return $item->format->protocol == "progressive";
+			});
+			
+			if($progressive){
+				$progressive = array_values($progressive); // reorder arrays
+				$progressive = $progressive[0]; // get [0] array
+
+				$r = new StdClass;
+				$r->artwork_url = $collection->artwork_url;
+				$r->title = $collection->title;
+				$r->full_duration = $collection->full_duration;
+				// $r->permalink_url = $collection->permalink_url;
+				// $r->waveform_url = $collection->waveform_url;
+				$r->progressive = $progressive->url;
+
+				array_push($result, $r);
+			}
+
+		}
+
+		$this->search_result = $result;
+
+		return $this;
+	}
+	
+	public function getStreamProgressive($progressive)
+	{
+		$progressive = $progressive."?client_id=".$this->client_id;
+
+		$file = file_get_contents($progressive);
+		$file = json_decode($file);
+
+		$this->stream = $file->url;
 
 		return $this;
 	}
