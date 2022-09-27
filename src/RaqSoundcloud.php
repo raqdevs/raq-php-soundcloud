@@ -19,8 +19,6 @@ class RaqSoundcloud {
 	public $limit_offset = "&limit=20&offset=0";
 	// public $app_version = "&app_version=1663668775&app_locale=en";
 
-
-
 	public function request($url)
 	{
 		$html = file_get_contents($url);
@@ -34,6 +32,57 @@ class RaqSoundcloud {
 		$this->dom = $dom;
 
 		return $this;
+	}
+
+	public function getClientIdLocal()
+	{
+		// var_dump(strtotime('now'));
+		
+		if(file_exists('client_id.json')){
+			$data = file_get_contents('client_id.json');
+			$data = json_decode($data);
+
+			if($data->expires <= strtotime('now')){
+				//
+				$data->client_id = $this->getClientId()->client_id;
+				$data->expires = strtotime('+8 hours');
+				$data = json_encode($data);
+
+				$result = file_put_contents('client_id.json', $data);
+
+				$data = file_get_contents('client_id.json');
+				$data = json_decode($data);
+
+				// var_dump('existe | expirou | nova requisição');
+				// var_dump($data);
+				
+				$this->client_id = $data->client_id;
+				return $this;
+			}else{
+
+				// var_dump('existe | não expirou');
+				// var_dump($data);
+
+				$this->client_id = $data->client_id;
+				return $this;
+			}
+		}else{
+			$data = new StdClass;
+			$data->client_id = $this->getClientId()->client_id;
+			$data->expires = strtotime('+8 hours');
+			$data = json_encode($data);
+
+			$result = file_put_contents('client_id.json', $data);
+
+			$data = file_get_contents('client_id.json');
+			$data = json_decode($data);
+
+			// var_dump('arquivo não existe | nova requisição');
+			// var_dump($data);
+
+			$this->client_id = $data->client_id;
+			return $this;
+		}
 	}
 
 	public function getClientId()
@@ -51,6 +100,8 @@ class RaqSoundcloud {
 		$script = explode('")', $script)[0];
 
 		$this->client_id = $script;
+
+		return $this;
 	}
 
 	public function getTrackId()
@@ -132,6 +183,10 @@ class RaqSoundcloud {
 			$progressive = array_filter($collection->media->transcodings,  function ($item){
 				return $item->format->protocol == "progressive";
 			});
+
+			if(!$collection->artwork_url){
+				$collection->artwork_url = $collection->user->avatar_url;
+			}
 			
 			if($progressive){
 				$progressive = array_values($progressive); // reorder arrays
@@ -140,9 +195,7 @@ class RaqSoundcloud {
 				$r = new StdClass;
 				$r->artwork_url = $collection->artwork_url;
 				$r->title = $collection->title;
-				$r->full_duration = $collection->full_duration;
-				// $r->permalink_url = $collection->permalink_url;
-				// $r->waveform_url = $collection->waveform_url;
+				$r->duration = $collection->duration;
 				$r->progressive = $progressive->url;
 
 				array_push($result, $r);
